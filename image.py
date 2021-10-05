@@ -102,35 +102,40 @@ def threshold(image: np.array, value: float, max_value: float, mode: int) -> tup
 def countNonZero(image: np.array) -> int:
     return (image.shape[0] * image.shape[1]) - (image == 0).sum()
 
-def dilate(image: np.array, kernel: np.array, iterations: int=1):
-    for _ in range(iterations):
-        result = np.zeros_like(image)
-        ks = kernel.shape[0]
-        mask = kernel.astype('bool')
-        for i in range(image.shape[0] - ks):
-            for j in range(image.shape[1] - ks):
-                patch = image[i:i + ks, j:j + ks]
-                result[i][j] = patch[mask].max()
+def dilate(image: np.array, kernel: np.array, iterations: int=1) -> np.array:
+    result = np.zeros_like(image)
+    ks = kernel.shape[0]
+    mask = kernel.astype('bool')
+    for i in range(image.shape[0] - ks):
+        for j in range(image.shape[1] - ks):
+            patch = image[i:i + ks, j:j + ks]
+            result[i][j] = patch[mask].max()
     return result
 
-def erode(image: np.array, kernel: np.array, iterations: int=1):
-    for _ in range(iterations):
-        result = np.zeros_like(image)
-        ks = kernel.shape[0]
-        mask = kernel.astype('bool')
-        for i in range(image.shape[0] - ks):
-            for j in range(image.shape[1] - ks):
-                patch = image[i:i + ks, j:j + ks]
-                result[i][j] = patch[mask].min()
+def erode(image: np.array, kernel: np.array):
+    result = np.zeros_like(image)
+    ks = kernel.shape[0]
+    mask = kernel.astype('bool')
+    for i in range(image.shape[0] - ks):
+        for j in range(image.shape[1] - ks):
+            patch = image[i:i + ks, j:j + ks]
+            result[i][j] = patch[mask].min()
     return result
 
-def opening():
-    pass
+def opening(image: np.array, kernel: np.array) -> np.array:
+    eroded = erode(image, kernel)
+    dilated = dilate(eroded, kernel)
+    return dilated
 
-def closing():
-    pass
+def closing(image: np.array, kernel: np.array) -> np.array:
+    dilated = dilate(image, kernel)
+    eroded = erode(dilated, kernel)
+    return eroded
 
-def getShapedKernel(size: int, shape: str):
+def morphologyGradient(image: np.array, kernel: np.array) -> np.array:
+    return dilate(image, kernel) - erode(image, kernel)
+
+def getShapedKernel(size: int, shape: str) -> np.array:
     assert (size % 2 == 1) & (size > 1), "Size must be odd and bigger than one"
     size = (size, size)
     if shape == Constants.mph_square:

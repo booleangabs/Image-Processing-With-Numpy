@@ -29,6 +29,10 @@ class Constants:
     thr_tomax = 3
     thr_otsu = 4
     
+    # Image morphology (mph)
+    mph_square = 0
+    mph_circle = 1
+    mph_cross = 2
     
 class ImageReader:
     def __init__(self, mode):
@@ -110,8 +114,20 @@ def opening():
 def closing():
     pass
 
-def getShapedKernel(size: tuple, shape: str):
-    pass
+def getShapedKernel(size: int, shape: str):
+    assert (size % 2 == 1) & (size > 1), "Size must be odd and bigger than one"
+    size = (size, size)
+    if shape == Constants.mph_square:
+        kernel = np.ones(size)
+    elif shape == Constants.mph_cross:
+        kernel = np.zeros(size)
+        kernel[size[0] // 2, :] = 1
+        kernel[:, size[1] // 2] = 1
+    else:
+        c = size[1] // 2
+        y, x = np.ogrid[:c * 2 + 1, :c * 2 + 1]
+        kernel = (np.hypot(x - c, y - c) <= c).astype('uint8')
+    return kernel.astype('uint8')
 
 # Filtering
 

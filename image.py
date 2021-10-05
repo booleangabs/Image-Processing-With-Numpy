@@ -102,11 +102,27 @@ def threshold(image: np.array, value: float, max_value: float, mode: int) -> tup
 def countNonZero(image: np.array) -> int:
     return (image.shape[0] * image.shape[1]) - (image == 0).sum()
 
-def dilate():
-    pass
+def dilate(image: np.array, kernel: np.array, iterations: int=1):
+    for _ in range(iterations):
+        result = np.zeros_like(image)
+        ks = kernel.shape[0]
+        mask = kernel.astype('bool')
+        for i in range(image.shape[0] - ks):
+            for j in range(image.shape[1] - ks):
+                patch = image[i:i + ks, j:j + ks]
+                result[i][j] = patch[mask].max()
+    return result
 
-def erode():
-    pass
+def erode(image: np.array, kernel: np.array, iterations: int=1):
+    for _ in range(iterations):
+        result = np.zeros_like(image)
+        ks = kernel.shape[0]
+        mask = kernel.astype('bool')
+        for i in range(image.shape[0] - ks):
+            for j in range(image.shape[1] - ks):
+                patch = image[i:i + ks, j:j + ks]
+                result[i][j] = patch[mask].min()
+    return result
 
 def opening():
     pass
@@ -126,7 +142,7 @@ def getShapedKernel(size: int, shape: str):
     else:
         c = size[1] // 2
         y, x = np.ogrid[:c * 2 + 1, :c * 2 + 1]
-        kernel = (np.hypot(x - c, y - c) <= c).astype('uint8')
+        kernel = (np.hypot(x - c, y - c) <= c)
     return kernel.astype('uint8')
 
 # Filtering

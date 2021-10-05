@@ -72,8 +72,8 @@ def threshold(image: np.array, value: float, max_value: float, mode: int) -> tup
                 max_icv = icv
     return value, result
 
-def countNonZero():
-    pass
+def countNonZero(image: np.array) -> int:
+    return (image.shape[0] * image.shape[1]) - (image == 0).sum()
 
 def dilate():
     pass

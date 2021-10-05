@@ -8,6 +8,7 @@ class Constants:
     thr_inverse = 1
     thr_tozero = 2
     thr_tomax = 3
+    thr_otsu = 4
     
 class ImageReader:
     def __init__(self, mode):
@@ -37,7 +38,6 @@ def histogram(image: np.array, normalize: bool= True) -> dict:
 def plotHistogram(image: np.array, normalize: bool= True, color: str= 'black'):
     hist = histogram(image, normalize)
     plt.bar(list(hist.keys()), hist.values(), width=1, color=color)
-    plt.plot([30,30],[0,0.025])
     plt.show()
 
 # Grayscale image processing
@@ -55,6 +55,21 @@ def threshold(image: np.array, value: float, max_value: float, mode: int) -> tup
         result[result < value] = 0
     elif mode == Constants.thr_tomax:
         result[result < value] = max_value
+    elif mode == Constants.thr_otsu:
+        hist = histogram(result)
+        max_icv = 0
+        for i in range(255):
+            w_0 = w_1 = u_0 = u_1 = 0
+            for j in range(i):
+                w_0 += hist[j]
+                u_0 += j * hist[j]
+            for j in range(i, 255):
+                w_1 += hist[j]
+                u_1 += j * hist[j]
+            icv = w_0 * w_1 * ((u_0/w_0 - u_1/w_1)**2) if (w_0 != 0) & (w_1 != 0) else 0
+            if max_icv < icv:
+                value = i
+                max_icv = icv
     return value, result
 
 def countNonZero():

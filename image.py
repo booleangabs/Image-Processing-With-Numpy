@@ -103,33 +103,43 @@ def countNonZero(image: np.array) -> int:
     return (image.shape[0] * image.shape[1]) - (image == 0).sum()
 
 def dilate(image: np.array, kernel: np.array, iterations: int=1) -> np.array:
-    result = np.zeros_like(image)
-    ks = kernel.shape[0]
-    mask = kernel.astype('bool')
-    for i in range(image.shape[0] - ks):
-        for j in range(image.shape[1] - ks):
-            patch = image[i:i + ks, j:j + ks]
-            result[i][j] = patch[mask].max()
-    return result
+    for _ in range(iterations):
+        result = np.zeros_like(image)
+        ks = kernel.shape[0]
+        c = ks // 2
+        padded = np.pad(image, ((c, c), (c, c)))
+        mask = kernel.astype('bool')
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
+                patch = padded[i:i + ks, j:j + ks]
+                result[i][j] = patch[mask].max()
+        return result
 
-def erode(image: np.array, kernel: np.array):
-    result = np.zeros_like(image)
-    ks = kernel.shape[0]
-    mask = kernel.astype('bool')
-    for i in range(image.shape[0] - ks):
-        for j in range(image.shape[1] - ks):
-            patch = image[i:i + ks, j:j + ks]
-            result[i][j] = patch[mask].min()
-    return result
+def erode(image: np.array, kernel: np.array, iterations: int=1):
+    for _ in range(iterations):
+        result = np.zeros_like(image)
+        ks = kernel.shape[0]
+        c = ks // 2
+        padded = np.pad(image, ((c, c), (c, c)))
+        mask = kernel.astype('bool')
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
+                patch = padded[i:i + ks, j:j + ks]
+                result[i][j] = patch[mask].min()
+        return result
 
-def opening(image: np.array, kernel: np.array) -> np.array:
-    eroded = erode(image, kernel)
-    dilated = dilate(eroded, kernel)
+def opening(image: np.array, kernel: np.array, iterations: int=1) -> np.array:
+    dilated = image
+    for _ in range(iterations):
+        eroded = erode(dilated, kernel)
+        dilated = dilate(eroded, kernel)
     return dilated
 
-def closing(image: np.array, kernel: np.array) -> np.array:
-    dilated = dilate(image, kernel)
-    eroded = erode(dilated, kernel)
+def closing(image: np.array, kernel: np.array, iterations: int=1) -> np.array:
+    eroded = image
+    for _ in range(iterations):
+        dilated = dilate(eroded, kernel)
+        eroded = dilate(dilated, kernel)
     return eroded
 
 def morphologyGradient(image: np.array, kernel: np.array) -> np.array:

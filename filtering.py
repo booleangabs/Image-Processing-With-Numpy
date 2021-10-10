@@ -1,13 +1,28 @@
 import numpy as np
 
-def boxBlur():
-    pass
+def boxBlur(image: np.array, size: int=3) -> np.array:
+    kernel = np.ones((size, size))
+    return convolve(image, kernel)
 
-def gaussianBlur():
-    pass
+def gaussianBlur(image: np.array, sigma: float, size: int=3) -> np.array:
+    ksm1o2 = (size - 1) / 2
+    sub = (-1 / (2 * sigma**2))
+    gaussian = np.e ** (sub * np.linspace(-ksm1o2, ksm1o2, size)**2)
+    gaussian = np.outer(gaussian, gaussian.T)
+    return gaussian / gaussian.sum()
 
-def medianBlur():
-    pass
+def medianBlur(image: np.array, size: int=3):
+    result = np.zeros_like(image)
+    c = size // 2
+    padded = np.pad(image, ((c, c), (c, c))).astype('uint8')
+    mask = np.ones((size, size)).astype('bool')
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            patch = padded[i:i + size, j:j + size]
+            array = patch[mask].flatten().copy()
+            array.sort()
+            result[i][j] = array[size**2 // 2]
+    return result
 
 def sharpen():
     pass

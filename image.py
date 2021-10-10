@@ -16,3 +16,13 @@ class ImageReader:
         else:
             image = imread(path, -1)
         return image.astype('float32')
+    
+def mapToRange(image: np.array, low: float, high: float) -> np.array:
+    norm = (image - image.min()) / (image.max() - image.min())
+    return norm * (high - low) + low
+
+def clipToRange(image: np.array, low: float, high: float) -> np.array:
+    result = image.copy()
+    result[image < low] = low
+    result[image > high] = high
+    return result

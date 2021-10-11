@@ -26,3 +26,6 @@ def clipToRange(image: np.array, low: float, high: float) -> np.array:
     result[image < low] = low
     result[image > high] = high
     return result
+
+class ConvertColor:
+    pass

@@ -6,7 +6,7 @@ class Histogram:
         self.is_norm = normalize
         self.image = image
         self.pixel_count = image.shape[0]*image.shape[1]
-        self(image, normalize)
+        self(image.astype('uint8'), normalize)
         
     def __call__(self, image: np.array, normalize: bool= True) -> dict:
         self.hist = dict()

@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from constants import Constants as cts
     
 class ImageReader:
@@ -27,5 +28,20 @@ def clipToRange(image: np.array, low: float, high: float) -> np.array:
     result[image > high] = high
     return result
 
-class ConvertColor:
-    pass
+def convertColor(image: np.array, mode: int):
+    assert 0 <= mode <= 11, "Check Constants class' docs for valid modes."
+    if mode in (cts.ccv_rgb2bgr, cts.ccv_bgr2rgb):
+        return image[..., ::-1]
+    elif mode == cts.ccv_rgb2gray:
+        return np.ceil(0.2989 * image[..., 0] + 0.587 * image[..., 1] + 0.114 * image[..., 2])
+    elif mode == cts.ccv_gray2rgb:
+        return np.repeat(image, 3, -1).reshape((*image.shape, 3))
+    
+def show(image: np.array):
+    plt.axis('off')
+    if len(image.shape) == 2:
+        plt.imshow(image.astype('uint8'), cmap='gray')
+    else:
+        plt.imshow(image.astype('uint8'))
+    plt.show()
+        

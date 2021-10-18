@@ -31,12 +31,30 @@ def clipToRange(image: np.array, low: float, high: float) -> np.array:
 def convertColor(image: np.array, mode: int):
     assert 0 <= mode <= 11, "Check Constants class' docs for valid modes."
     if mode in (cts.ccv_rgb2bgr, cts.ccv_bgr2rgb):
-        return image[..., ::-1]
+        result = image[..., ::-1]
     elif mode == cts.ccv_rgb2gray:
-        return np.ceil(0.2989 * image[..., 0] + 0.587 * image[..., 1] + 0.114 * image[..., 2])
+        result = np.ceil(0.2989 * image[..., 0] + 0.587 * image[..., 1] + 0.114 * image[..., 2])
     elif mode == cts.ccv_gray2rgb:
-        return np.repeat(image, 3, -1).reshape((*image.shape, 3))
-    
+        result = merge([image]*3)
+    elif mode == cts.ccv_rgb2rgba:
+        result = image.copy()
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
+                result[i][j] = np.append(result[i][j], 255)
+    elif mode == cts.ccv_rgba2rgb:
+        result = image[..., :3]
+    return result
+
+def split(image: np.array):
+    assert len(image.shape) > 2, "Cannot use it on single channel images."
+    result = []
+    for i in range(image.shape[2]):
+        result.append(image[..., i])
+    return result
+
+def merge(channels: list):
+    return np.dstack(channels)
+
 def show(image: np.array):
     plt.axis('off')
     if len(image.shape) == 2:

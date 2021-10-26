@@ -1,2 +1,12 @@
 # Image Processing With Numpy
-Implementing digital image processing concepts and algorithms using only Numpy and matplotlib
+Implementing digital image processing concepts and algorithms using only Numpy and matplotlib\
+\
+\
+**Features:**
+- Image reading
+- Color conversion
+- Thresholding
+- Binary and grayscale image processing
+- Convolution and filters
+- Canny's edge detection
+- Shapes and contours

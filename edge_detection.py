@@ -1,5 +1,5 @@
 import numpy as np
-from image import clipToRange
+from image import clipToRange, mapToRange
 from filtering import gaussianBlur, sobel
 
 def canny(image: np.array, t0: float, t1: float, blur_size: int=3, sigma: float=5):
@@ -8,6 +8,7 @@ def canny(image: np.array, t0: float, t1: float, blur_size: int=3, sigma: float=
     assert (0 <= t0 < t1 <= 255), "The following condition must be met: 0 <= t0 < t1 <= 255"
     blurred = gaussianBlur(image, sigma, blur_size)
     grad = sobel(blurred)
+    grad['magnitude'] = mapToRange(grad['magnitude'], 0, 255)
     orientation = np.rad2deg(grad['orientation'])
     directions = np.array([0, 45, 90, 135])
     orientation = np.digitize(orientation, directions)
@@ -26,11 +27,18 @@ def canny(image: np.array, t0: float, t1: float, blur_size: int=3, sigma: float=
                 mags = (padded[i - 1][j], padded[i + 1][j])
             else:
                 mags = (padded[i - 1][j - 1], padded[i + 1][j + 1])
-            suppressed[i][j] = int((grad['magnitude'][i][j] > mags[0]) and \
-                                   (grad['magnitude'][i][j] > mags[1]))
-    result = np.zeros_like(image)
-    result[image < t0] = 255
-    result[image > t1] = 0
+            
+            if ((grad['magnitude'][i][j] > mags[0]) and (grad['magnitude'][i][j] > mags[1])):
+                suppressed[i][j] = grad['magnitude'][i][j]
     
-    return 255 - clipToRange(result + suppressed, 0, 255)
+    double_thresh, result = np.zeros_like(image), np.zeros_like(image)
+    double_thresh[suppressed > t1] = 255
+    double_thresh[suppressed < t0] = 0
+    padded = np.pad(double_thresh, ((1, 1), (1, 1)))
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            patch = padded[i:i + 3, j:j + 3] # 8-neighbourhood
+            if (patch > 0).any():
+                result[i][j] = 255
+    return result
     

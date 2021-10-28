@@ -2,13 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Histogram:
-    def __init__(self, image: np.array, normalize: bool= True):
+    def __init__(self, image: np.ndarray, normalize: bool= True):
         self.is_norm = normalize
         self.image = image
         self.pixel_count = image.shape[0]*image.shape[1]
         self(image.astype('uint8'), normalize)
         
-    def __call__(self, image: np.array, normalize: bool= True) -> dict:
+    def __call__(self, image: np.ndarray, normalize: bool= True) -> dict:
         self.hist = dict()
         self.cumulative_sum = np.zeros((256, ))
         for i in range(256):
@@ -30,7 +30,7 @@ class Histogram:
                 self.hist[i] /= self.pixel_count
             self.is_norm = True
 
-def equalize(image: np.array):
+def equalize(image: np.ndarray) -> np.ndarray:
     hist = Histogram(image).hist
     result = image.copy()
     L = 256

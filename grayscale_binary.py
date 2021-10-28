@@ -2,7 +2,7 @@ import numpy as np
 import constants as cts
 from histogram import Histogram
 
-def threshold(image: np.array, value: float, max_value: float, mode: int) -> tuple:
+def threshold(image: np.ndarray, value: float, max_value: float, mode: int) -> tuple:
     assert 0 <= mode < len([i for i in dir(cts) if not(i.startswith('__'))]), \
         "Invalid threshold mode"
     result = image.copy()
@@ -32,10 +32,10 @@ def threshold(image: np.array, value: float, max_value: float, mode: int) -> tup
                 max_icv = icv
     return value, result
 
-def countNonZero(image: np.array) -> int:
+def countNonZero(image: np.ndarray) -> int:
     return (image.shape[0] * image.shape[1]) - (image == 0).sum()
 
-def dilate(image: np.array, kernel: np.array, iterations: int=1) -> np.array:
+def dilate(image: np.ndarray, kernel: np.ndarray, iterations: int=1) -> np.ndarray:
     for _ in range(iterations):
         result = np.zeros_like(image)
         ks = kernel.shape[0]
@@ -48,7 +48,7 @@ def dilate(image: np.array, kernel: np.array, iterations: int=1) -> np.array:
                 result[i][j] = patch[mask].max()
         return result
 
-def erode(image: np.array, kernel: np.array, iterations: int=1):
+def erode(image: np.ndarray, kernel: np.ndarray, iterations: int=1) -> np.ndarray:
     for _ in range(iterations):
         result = np.zeros_like(image)
         ks = kernel.shape[0]
@@ -61,24 +61,24 @@ def erode(image: np.array, kernel: np.array, iterations: int=1):
                 result[i][j] = patch[mask].min()
         return result
 
-def opening(image: np.array, kernel: np.array, iterations: int=1) -> np.array:
+def opening(image: np.ndarray, kernel: np.ndarray, iterations: int=1) -> np.ndarray:
     dilated = image
     for _ in range(iterations):
         eroded = erode(dilated, kernel)
         dilated = dilate(eroded, kernel)
     return dilated
 
-def closing(image: np.array, kernel: np.array, iterations: int=1) -> np.array:
+def closing(image: np.ndarray, kernel: np.ndarray, iterations: int=1) -> np.ndarray:
     eroded = image
     for _ in range(iterations):
         dilated = dilate(eroded, kernel)
         eroded = dilate(dilated, kernel)
     return eroded
 
-def morphologyGradient(image: np.array, kernel: np.array) -> np.array:
+def morphologyGradient(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
     return dilate(image, kernel) - erode(image, kernel)
 
-def getShapedKernel(size: int, shape: str) -> np.array:
+def getShapedKernel(size: int, shape: str) -> np.ndarray:
     assert (size % 2 == 1) & (size > 1), "Size must be odd and bigger than one"
     size = (size, size)
     if shape == cts.mph_square:

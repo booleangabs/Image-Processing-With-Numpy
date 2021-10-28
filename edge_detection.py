@@ -2,7 +2,7 @@ import numpy as np
 from image import clipToRange, mapToRange
 from filtering import gaussianBlur, sobel
 
-def canny(image: np.array, t0: float, t1: float, blur_size: int=3, sigma: float=5):
+def canny(image: np.ndarray, t0: float, t1: float, blur_size: int=3, sigma: float=5):
     assert blur_size % 2 == 1, f"Gaussian kernel size expected to be odd. Got {blur_size}."
     assert sigma > 0, "Gaussian kernel variance must be bigger than 0."
     assert (0 <= t0 < t1 <= 255), "The following condition must be met: 0 <= t0 < t1 <= 255"

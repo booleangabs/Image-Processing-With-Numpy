@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from constants import Constants as cts
+from constants import Constants as cts    
     
 class ImageReader:
     def __init__(self, mode):
         assert mode in [0, 1, 2], 'Insert a valid mode. Print cts.__doc__ for help.'
         self.mode = mode
     
-    def __call__(self, path: str) -> np.array:
+    def __call__(self, path: str) -> np.ndarray:
         from cv2 import imread, cvtColor
         if self.mode == cts.ird_color:
             image = imread(path)
@@ -18,17 +18,17 @@ class ImageReader:
             image = imread(path, -1)
         return image.astype('float32')
     
-def mapToRange(image: np.array, low: float, high: float) -> np.array:
+def mapToRange(image: np.ndarray, low: float, high: float) -> np.ndarray:
     norm = (image - image.min()) / (image.max() - image.min())
     return norm * (high - low) + low
 
-def clipToRange(image: np.array, low: float, high: float) -> np.array:
+def clipToRange(image: np.ndarray, low: float, high: float) -> np.ndarray:
     result = image.copy()
     result[image < low] = low
     result[image > high] = high
     return result
 
-def convertColor(image: np.array, mode: int):
+def convertColor(image: np.ndarray, mode: int):
     assert 0 <= mode <= 11, "Check Constants class' docs for valid modes."
     if mode in (cts.ccv_rgb2bgr, cts.ccv_bgr2rgb):
         result = image[..., ::-1]
@@ -45,17 +45,17 @@ def convertColor(image: np.array, mode: int):
         result = image[..., :3]
     return result
 
-def split(image: np.array):
+def split(image: np.ndarray) -> list:
     assert len(image.shape) > 2, "Cannot use it on single channel images."
     result = []
     for i in range(image.shape[2]):
         result.append(image[..., i])
     return result
 
-def merge(channels: list):
+def merge(channels: list) -> np.ndarray:
     return np.dstack(channels)
 
-def show(image: np.array):
+def show(image: np.ndarray):
     plt.axis('off')
     if len(image.shape) == 2:
         plt.imshow(image.astype('uint8'), cmap='gray')

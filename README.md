@@ -8,5 +8,5 @@ Implementing digital image processing concepts and algorithms using only Numpy a
 - Thresholding
 - Binary and grayscale image processing
 - Convolution and filters
-- Canny's edge detection
-- Shapes and contours
+- Canny's edge detection [TODO]
+- Shapes and contours [TODO]

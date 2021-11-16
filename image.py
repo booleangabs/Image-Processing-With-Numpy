@@ -30,7 +30,8 @@ class ColorConverter:
             3: self.__gray2Rgb,
             4: self.__rgb2Rgba,
             5: self.__rgba2Rgb,
-            6: self.__rgb2Hsv
+            6: self.__rgb2Hsv,
+            7: self.__hsv2Rgb
             }
         
     def __call__(self, image: np.array) -> np.array:
@@ -85,6 +86,42 @@ class ColorConverter:
         for i in range(image.shape[0]):
             for j in range(image.shape[1]):
                 result[i][j] = convertPixel(image[i][j] / division_factor)
+        return result
+    
+    def __hsv2Rgb(self, image):
+        def convertPixel(pixel):
+            if pixel[2] == 0:
+                return np.zeros((3, ))
+            h, s, v = pixel
+            h /= 30
+            s /= 255
+            v /= 255
+            switch = int(h)
+            frac = h - switch
+            c = [v * (1 - s), 
+                 v * (1 - (s * frac)), 
+                 v * (1 - (s * (1 - frac)))]
+            if switch == 0:
+                r, g, b = v, c[2], c[0]
+            elif switch == 1:
+                r, g, b = c[1], v, c[0]
+            elif switch == 2:
+                r, g, b = c[0], v, c[2]
+            elif switch == 3:
+                r, g, b = c[0], c[1], v
+            elif switch == 4:
+                r, g, b = c[2], c[1], v
+            else:
+                r, g, b = v, c[0], c[1]
+            r *= 255
+            g *= 255
+            b *= 255
+            return np.uint8([r, g, b])
+        
+        result = np.zeros_like(image).astype('uint8')
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
+                result[i][j] = convertPixel(image[i][j])
         return result
     
 def mapToRange(image: np.ndarray, low: float, high: float) -> np.ndarray:

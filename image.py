@@ -23,18 +23,18 @@ class ColorConverter:
     def __init__(self, mode: int):
         assert mode in range(12), 'Please use a valid mode'
         self.mode = mode
+        self.conversion_methods = {
+            0: self.__invertOrder,
+            1: self.__invertOrder,
+            2: self.__rgb2Gray,
+            3: self.__gray2Rgb,
+            4: self.__rgb2Rgba,
+            5: self.__rgba2Rgb,
+            6: self.__rgb2Hsv
+            }
         
     def __call__(self, image: np.array) -> np.array:
-        if self.mode in (cts.ccv_rgb2bgr, cts.ccv_bgr2rgb):
-            result = self.__invertOrder(image)
-        elif self.mode == cts.ccv_rgb2gray:
-            result = self.__rgb2Gray(image)
-        elif self.mode == cts.ccv_gray2rgb:
-            result = self.__gray2Rgb(image)
-        elif self.mode == cts.ccv_rgb2rgba:
-            result = self.__rgb2Rgba(image)
-        elif self.mode == cts.ccv_rgba2rgb:
-            result = self.__rgba2Rgb(image)
+        result = self.conversion_methods[self.mode](image)
         return result.astype('uint8')
     
     def __invertOrder(self, image):
@@ -55,6 +55,37 @@ class ColorConverter:
     
     def __rgba2Rgb(self, image):
         return image[..., :3]
+    
+    def __rgb2Hsv(self, image):
+        def convertPixel(pixel):
+            M = pixel.max(), np.argmax(pixel)
+            m = pixel.min(), np.argmin(pixel)
+            c = M[0] - m[0]
+            v = M[0]
+            s = 0 if M[0] == 0 else c / M[0]
+            h = None
+            if c == 0:
+                h = 0
+            else:
+                if M[1] == pixel[0]:
+                    a = 6 if pixel[1] < pixel[2] else 0
+                    h = ((pixel[1] - pixel[2]) / c) + a
+                elif M[1] == pixel[1]:
+                    h = ((pixel[2] - pixel[1]) / c) + 2
+                else:
+                    h = ((pixel[0] - pixel[1]) / c) + 4
+                h /= 6
+            h *= 180
+            s *= 255
+            v *= 255
+            return np.uint8([h, s, v])
+        
+        division_factor = 1 if image.max() <= 1 else 255
+        result = np.zeros_like(image).astype('uint8')
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
+                result[i][j] = convertPixel(image[i][j] / division_factor)
+        return result
     
 def mapToRange(image: np.ndarray, low: float, high: float) -> np.ndarray:
     norm = (image - image.min()) / (image.max() - image.min())

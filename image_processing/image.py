@@ -1,38 +1,41 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from constants import Constants as cts 
-import warnings; warnings.filterwarnings('ignore')   
-    
-class ImageReader:
-    def __init__(self, mode):
-        assert mode in [0, 1, 2], 'Insert a valid mode. Print cts.__doc__ for help.'
+import matplotlib.image as mpimg
+import image_processing.constants as cts
+import warnings; 
+warnings.filterwarnings('ignore')   
+
+
+class Image():
+    def __init__(self, path: str, mode: int = cts.READ_COLOR):
+        self.data = mpimg.imread(path)
+        if mode == cts.READ_GRAY and len(self.data.shape) > 2:
+            cc = ColorConverter(cts.COLOR_RGB2GRAY)
+            self.data = cc(self.data)
         self.mode = mode
     
-    def __call__(self, path: str) -> np.ndarray:
-        from cv2 import imread, cvtColor
-        if self.mode == cts.ird_color:
-            image = imread(path)
-            image = cvtColor(image, 4)
-        elif self.mode == cts.ird_gray:
-            image = imread(path, 0)
+    def show(self):
+        plt.axis("off")
+        if self.mode == cts.READ_COLOR:
+            plt.imshow(self.data.astype("uint8"))
         else:
-            image = imread(path, -1)
-        return image.astype('float32')
+            plt.imshow(self.data, cmap="gray")
+        plt.show()
     
 class ColorConverter:
     def __init__(self, mode: int):
         assert mode in range(12), 'Please use a valid mode'
         self.mode = mode
         self.conversion_methods = {
-            0: self.__invertOrder,
-            1: self.__invertOrder,
-            2: self.__rgb2Gray,
-            3: self.__gray2Rgb,
-            4: self.__rgb2Rgba,
-            5: self.__rgba2Rgb,
-            6: self.__rgb2Hsv,
-            7: self.__hsv2Rgb
-            }
+            cts.COLOR_RGB2BGR: self.__invertOrder,
+            cts.COLOR_BGR2RGB: self.__invertOrder,
+            cts.COLOR_RGB2GRAY: self.__rgb2Gray,
+            cts.COLOR_GRAY2RGB: self.__gray2Rgb,
+            cts.COLOR_RGB2RGBA: self.__rgb2Rgba,
+            cts.COLOR_RGBA2RGB: self.__rgba2Rgb,
+            cts.COLOR_RGB2HSV: self.__rgb2Hsv,
+            cts.COLOR_HSV2RGB: self.__hsv2Rgb
+        }
         
     def __call__(self, image: np.array) -> np.array:
         result = self.conversion_methods[self.mode](image)
@@ -143,12 +146,4 @@ def split(image: np.ndarray) -> list:
 
 def merge(channels: list) -> np.ndarray:
     return np.dstack(channels)
-
-def show(image: np.ndarray):
-    plt.axis('off')
-    if len(image.shape) == 2:
-        plt.imshow(image.astype('uint8'), cmap='gray')
-    else:
-        plt.imshow(image.astype('uint8'))
-    plt.show()
         

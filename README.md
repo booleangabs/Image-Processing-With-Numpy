@@ -23,5 +23,5 @@ share any mistakes you may spot in it or provide any feedback or ideas for other
 
 ***
 
-### Resources
-Sample images in "inputs/" were downloaded from the following image repository: https://links.uwaterloo.ca/Repository.html
+### Resource credits
+Sample images in "inputs/" were downloaded for free from the following image repository: https://links.uwaterloo.ca/Repository.html

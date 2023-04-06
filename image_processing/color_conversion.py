@@ -1,29 +1,110 @@
+"""
+MIT License
+
+Copyright (c) 2021 booleangabs
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+# site-packages
 import numpy as np
 import image_processing.constants as cts
+
+# local
 from image_processing.utils import merge
 
     
-def impl_invertOrder(image: np.ndarray):
+def impl_invert_order(image: np.ndarray) -> np.ndarray:
+    """RGB2BGR/BGR2RGB
+    Invert channel order (rgb to bgr-like transformations)
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
     return image[..., ::-1]
 
-def impl_rgb2Gray(image: np.ndarray):
+def impl_rgb2gray(image: np.ndarray) -> np.array:
+    """RGB2GRAY
+    Converts RGB to grayscale (Y channel)
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.array: Converted Image
+    """
     return np.ceil(0.2989 * image[..., 0] + 0.587 * image[..., 1] + 0.114 * image[..., 2])
 
-def impl_gray2Rgb(image: np.ndarray):
-    return merge([image] * 3)
+def impl_gray2rgb(image: np.ndarray) -> np.ndarray:
+    """GRAY2RGB
+    Repeat grayscale image along three channels
 
-def impl_rgb2Rgba(image: np.ndarray):
-    result = np.zeros((image.shape[0], image.shape[1], 4))
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    return merge([image.copy(), image.copy(), image.copy()])
+
+def impl_rgb2rgba(image: np.ndarray) -> np.ndarray:
+    """RGB2RGBA
+    Creates the alpha channel filling it with 255
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    result = np.zeros((image.shape[0], image.shape[1], 4), dtype=image.dtype)
     for i in range(image.shape[0]):
         for j in range(image.shape[1]):
             result[i][j] = np.append(image[i][j], 255)
     return result
 
-def impl_rgba2Rgb(image: np.ndarray):
+def impl_rgba2rgb(image: np.ndarray) -> np.ndarray:
+    """RGBA2RGB
+    Drops the alpha channel
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
     return image[..., :3]
 
-def impl_rgb2Hsv(image: np.ndarray):
+def impl_rgb2hsv(image: np.ndarray) -> np.ndarray:
+    """RGB2HSV
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
     def convertPixel(pixel):
+        """Wraps the pixelwise calculations for HSV"""
         M = pixel.max(), np.argmax(pixel)
         m = pixel.min(), np.argmin(pixel)
         c = M[0] - m[0]
@@ -47,14 +128,23 @@ def impl_rgb2Hsv(image: np.ndarray):
         return np.uint8([h, s, v])
     
     division_factor = 1 if image.max() <= 1 else 255
-    result = np.zeros_like(image).astype('uint8')
+    result = np.zeros_like(image).astype(image.dtype)
     for i in range(image.shape[0]):
         for j in range(image.shape[1]):
             result[i][j] = convertPixel(image[i][j] / division_factor)
     return result
 
-def impl_hsv2Rgb(image: np.ndarray):
+def impl_hsv2rgb(image: np.ndarray) -> np.ndarray:
+    """HSV2RGB
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
     def convertPixel(pixel):
+        """Wraps the pixelwise calculations for HSV"""
         if pixel[2] == 0:
             return np.zeros((3, ))
         h, s, v = pixel
@@ -83,22 +173,39 @@ def impl_hsv2Rgb(image: np.ndarray):
         b *= 255
         return np.uint8([r, g, b])
     
-    result = np.zeros_like(image).astype('uint8')
+    result = np.zeros_like(image).astype(image.dtype)
     for i in range(image.shape[0]):
         for j in range(image.shape[1]):
             result[i][j] = convertPixel(image[i][j])
     return result
 
 conversion_methods = {
-    cts.COLOR_RGB2BGR: impl_invertOrder,
-    cts.COLOR_BGR2RGB: impl_invertOrder,
-    cts.COLOR_RGB2GRAY: impl_rgb2Gray,
-    cts.COLOR_GRAY2RGB: impl_gray2Rgb,
-    cts.COLOR_RGB2RGBA: impl_rgb2Rgba,
-    cts.COLOR_RGBA2RGB: impl_rgba2Rgb,
-    cts.COLOR_RGB2HSV: impl_rgb2Hsv,
-    cts.COLOR_HSV2RGB: impl_hsv2Rgb
+    cts.COLOR_RGB2BGR: impl_invert_order,
+    cts.COLOR_BGR2RGB: impl_invert_order,
+    cts.COLOR_RGB2GRAY: impl_rgb2gray,
+    cts.COLOR_GRAY2RGB: impl_gray2rgb,
+    cts.COLOR_RGB2RGBA: impl_rgb2rgba,
+    cts.COLOR_RGBA2RGB: impl_rgba2rgb,
+    cts.COLOR_RGB2HSV: impl_rgb2hsv,
+    cts.COLOR_HSV2RGB: impl_hsv2rgb
 }
 
-def convert_color(image: np.ndarray, mode: int):
+def convert_color(image: np.ndarray, mode: int) -> np.ndarray:
+    """Color conversion. Options for mode are
+            COLOR_RGB2BGR, COLOR_BGR2RGB, COLOR_RGB2GRAY
+            COLOR_GRAY2RGB, COLOR_RGB2RGBA, COLOR_RGBA2RGB
+            COLOR_RGB2HSV, COLOR_HSV2RGB, COLOR_RGB2HSL*
+            COLOR_HSL2RGB*, COLOR_RGB2LAB*, COLOR_LAB2RGB*
+
+    * to be implemented in the future
+    
+    Args:
+        image (np.ndarray): Input image
+        mode (int): Color conversion flag. (COLOR_ prefix)
+
+    Returns:
+        np.ndarray: _description_
+    """
+    if not mode in conversion_methods.keys():
+        raise RuntimeError(f"Conversion {mode} is not available or not a valid option.")
     return conversion_methods[mode](image).astype(image.dtype)

@@ -181,6 +181,95 @@ def impl_hsv2rgb(image: np.ndarray) -> np.ndarray:
     else:
         return result
     
+def impl_rgb2hls(image: np.ndarray) -> np.ndarray:
+    """RGB2HLS
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    if image.dtype != float:
+        image_float = image.astype("float64") / 255
+    else:
+        image_float = image.copy()
+
+    R, G, B = split(image_float)
+    M = image_float.max(axis=2)
+    m = image_float.min(axis=2)
+    
+    L = (M + m) / 2
+    S = np.zeros_like(L)
+    delta = M - m
+    mask = np.bitwise_and(L < 0.5, L != 0)
+    S[mask] = delta[mask] / (2 * L)[mask]
+    mask = (L >= 0.5)
+    S[mask] = delta[mask] / (2 * (1 - L))[mask]
+        
+    wr = np.where(np.bitwise_and(M == R, delta != 0))
+    wg = np.where(np.bitwise_and(M == G, delta != 0))
+    wb = np.where(np.bitwise_and(M == B, delta != 0))
+    all_eq = np.bitwise_and(R == G, G == B)
+    H = np.zeros_like(L)
+    H[wr] = 60 * ((G[wr] - B[wr]) / delta[wr])
+    H[wg] = 120 + 60 * (B[wg] - R[wg]) / delta[wg]
+    H[wb] = 240 + 60 * (R[wb] - G[wb]) / delta[wb]
+    H[all_eq] = 0
+    H[H < 0] += 360 
+    
+    if image.dtype != float:
+        return np.uint8(merge([H / 2, L * 255, S * 255]))
+    else:
+        return merge([H, L, S])
+
+def impl_hls2rgb(image: np.ndarray) -> np.ndarray:
+    """HLS2RGB
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    if image.dtype != float:
+        image_float = image.astype("float64")
+        image_float[..., 0] *= 2
+        image_float[..., 1:] = image_float[..., 1:] / 255
+    else:
+        image_float = image.copy()
+    
+    H, L, S = split(image_float)
+    
+    result = np.zeros(image.shape, dtype="float64")
+    C = S * (1 - np.abs(2 * L - 1))
+    X = C * (1 - np.abs(((H / 60) % 2) - 1))
+    M = L - (C / 2)
+    
+    mask = H < 60
+    result[mask] = np.dstack([C[mask], X[mask], np.zeros_like(C[mask])])
+    
+    mask = np.bitwise_and(H >= 60, H < 120)
+    result[mask] = np.dstack([X[mask], C[mask], np.zeros_like(C[mask])])
+    
+    mask = np.bitwise_and(H >= 120, H < 180)
+    result[mask] = np.dstack([np.zeros_like(C[mask]), C[mask], X[mask]])
+    
+    mask = np.bitwise_and(H >= 180, H < 240)
+    result[mask] = np.dstack([np.zeros_like(C[mask]), X[mask], C[mask]])
+    
+    mask = np.bitwise_and(H >= 240, H < 300)
+    result[mask] = np.dstack([X[mask], np.zeros_like(C[mask]), C[mask]])
+    
+    mask = H >= 300
+    result[mask] = np.dstack([C[mask], np.zeros_like(C[mask]), X[mask]])
+    
+    result += merge([M] * 3)   
+
+    if image.dtype != float:
+        return np.uint8(result * 255)
+    else:
+        return result
 
 conversion_methods = {
     cts.COLOR_RGB2BGR: impl_invert_order,
@@ -190,15 +279,17 @@ conversion_methods = {
     cts.COLOR_RGB2RGBA: impl_rgb2rgba,
     cts.COLOR_RGBA2RGB: impl_rgba2rgb,
     cts.COLOR_RGB2HSV: impl_rgb2hsv,
-    cts.COLOR_HSV2RGB: impl_hsv2rgb
+    cts.COLOR_HSV2RGB: impl_hsv2rgb,
+    cts.COLOR_RGB2HLS: impl_rgb2hls,
+    cts.COLOR_HLS2RGB: impl_hls2rgb
 }
 
 def convert_color(image: np.ndarray, mode: int) -> np.ndarray:
     """Color conversion. Options for mode are
             COLOR_RGB2BGR, COLOR_BGR2RGB, COLOR_RGB2GRAY
             COLOR_GRAY2RGB, COLOR_RGB2RGBA, COLOR_RGBA2RGB
-            COLOR_RGB2HSV, COLOR_HSV2RGB, COLOR_RGB2HSL*
-            COLOR_HSL2RGB*, COLOR_RGB2LAB*, COLOR_LAB2RGB*
+            COLOR_RGB2HSV, COLOR_HSV2RGB, COLOR_RGB2HSL
+            COLOR_HSL2RGB, COLOR_RGB2LAB*, COLOR_LAB2RGB*
 
     * to be implemented in the future
     

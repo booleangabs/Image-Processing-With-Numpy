@@ -27,7 +27,7 @@ import numpy as np
 import image_processing.constants as cts
 
 # local
-from image_processing.utils import merge
+from image_processing.utils import merge, split
 
     
 def impl_invert_order(image: np.ndarray) -> np.ndarray:
@@ -103,36 +103,35 @@ def impl_rgb2hsv(image: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: Converted Image
     """
-    def convertPixel(pixel):
-        """Wraps the pixelwise calculations for HSV"""
-        M = pixel.max(), np.argmax(pixel)
-        m = pixel.min(), np.argmin(pixel)
-        c = M[0] - m[0]
-        v = M[0]
-        s = 0 if M[0] == 0 else c / M[0]
-        h = None
-        if c == 0:
-            h = 0
-        else:
-            if M[1] == pixel[0]:
-                a = 6 if pixel[1] < pixel[2] else 0
-                h = ((pixel[1] - pixel[2]) / c) + a
-            elif M[1] == pixel[1]:
-                h = ((pixel[2] - pixel[1]) / c) + 2
-            else:
-                h = ((pixel[0] - pixel[1]) / c) + 4
-            h /= 6
-        h *= 180
-        s *= 255
-        v *= 255
-        return np.uint8([h, s, v])
+    if image.dtype != float:
+        image_float = image.astype("float64") / 255
+    else:
+        image_float = image.copy()
+
+    R, G, B = split(image_float)
+    M = image_float.max(axis=2)
+    m = image_float.min(axis=2)
     
-    division_factor = 1 if image.max() <= 1 else 255
-    result = np.zeros_like(image).astype(image.dtype)
-    for i in range(image.shape[0]):
-        for j in range(image.shape[1]):
-            result[i][j] = convertPixel(image[i][j] / division_factor)
-    return result
+    V = M.copy()
+    S = np.zeros_like(V)
+    delta = M - m
+    S[M != 0] = delta[M != 0] / M[M != 0]
+    
+    wr = np.where(np.bitwise_and(M == R, delta != 0))
+    wg = np.where(np.bitwise_and(M == G, delta != 0))
+    wb = np.where(np.bitwise_and(M == B, delta != 0))
+    all_eq = np.bitwise_and(R == G, G == B)
+    H = np.zeros_like(V)
+    H[wr] = 60 * ((G[wr] - B[wr]) / delta[wr])
+    H[wg] = 120 + 60 * (B[wg] - R[wg]) / delta[wg]
+    H[wb] = 240 + 60 * (R[wb] - G[wb]) / delta[wb]
+    H[all_eq] = 0
+    H[H < 0] += 360 
+    
+    if image.dtype != float:
+        return np.uint8(merge([H / 2, S * 255, V * 255]))
+    else:
+        return merge([H, S, V])
 
 def impl_hsv2rgb(image: np.ndarray) -> np.ndarray:
     """HSV2RGB
@@ -143,41 +142,45 @@ def impl_hsv2rgb(image: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: Converted Image
     """
-    def convertPixel(pixel):
-        """Wraps the pixelwise calculations for HSV"""
-        if pixel[2] == 0:
-            return np.zeros((3, ))
-        h, s, v = pixel
-        h /= 30
-        s /= 255
-        v /= 255
-        switch = int(h)
-        frac = h - switch
-        c = [v * (1 - s), 
-                v * (1 - (s * frac)), 
-                v * (1 - (s * (1 - frac)))]
-        if switch == 0:
-            r, g, b = v, c[2], c[0]
-        elif switch == 1:
-            r, g, b = c[1], v, c[0]
-        elif switch == 2:
-            r, g, b = c[0], v, c[2]
-        elif switch == 3:
-            r, g, b = c[0], c[1], v
-        elif switch == 4:
-            r, g, b = c[2], c[1], v
-        else:
-            r, g, b = v, c[0], c[1]
-        r *= 255
-        g *= 255
-        b *= 255
-        return np.uint8([r, g, b])
+    if image.dtype != float:
+        image_float = image.astype("float64")
+        image_float[..., 0] *= 2
+        image_float[..., 1:] = image_float[..., 1:] / 255
+    else:
+        image_float = image.copy()
     
-    result = np.zeros_like(image).astype(image.dtype)
-    for i in range(image.shape[0]):
-        for j in range(image.shape[1]):
-            result[i][j] = convertPixel(image[i][j])
-    return result
+    H, S, V = split(image_float)
+    
+    result = np.zeros(image.shape, dtype="float64")
+    C = S * V
+    X = C * (1 - np.abs(((H / 60) % 2) - 1))
+    M = V - C
+    
+    mask = H < 60
+    result[mask] = np.dstack([C[mask], X[mask], np.zeros_like(C[mask])])
+    
+    mask = np.bitwise_and(H >= 60, H < 120)
+    result[mask] = np.dstack([X[mask], C[mask], np.zeros_like(C[mask])])
+    
+    mask = np.bitwise_and(H >= 120, H < 180)
+    result[mask] = np.dstack([np.zeros_like(C[mask]), C[mask], X[mask]])
+    
+    mask = np.bitwise_and(H >= 180, H < 240)
+    result[mask] = np.dstack([np.zeros_like(C[mask]), X[mask], C[mask]])
+    
+    mask = np.bitwise_and(H >= 240, H < 300)
+    result[mask] = np.dstack([X[mask], np.zeros_like(C[mask]), C[mask]])
+    
+    mask = H >= 300
+    result[mask] = np.dstack([C[mask], np.zeros_like(C[mask]), X[mask]])
+    
+    result += merge([M] * 3)   
+
+    if image.dtype != float:
+        return np.uint8(result * 255)
+    else:
+        return result
+    
 
 conversion_methods = {
     cts.COLOR_RGB2BGR: impl_invert_order,

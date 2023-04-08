@@ -5,9 +5,9 @@ Implementing digital image processing concepts and algorithms using only Numpy a
 
 ### Features
 - Image reading and writing
-- Image normalization, rescaling adnd value clipping
+- Image normalization, rescaling and value clipping
 - Channel splitting and merging
-- Color conversion: RGB, BGR, HSV, HSL, Lab, grayscale (In development) 
+- Color conversion: Grayscale, BGR, HSV, HLS, Lab, YCbCr, Luv (In development) 
 
 
 ### Examples

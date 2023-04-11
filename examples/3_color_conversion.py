@@ -64,3 +64,8 @@ img_hls = ipn.convert_color(img, ipn.COLOR_RGB2HLS)
 img_recon = ipn.convert_color(img_hls, ipn.COLOR_HLS2RGB)
 print(f"HLS conversion error (MSE): {MSE(img, img_recon)}")
 ipn.show(img_hls)
+
+img_xyz = ipn.convert_color(img, ipn.COLOR_RGB2XYZ)
+img_recon = ipn.convert_color(img_xyz, ipn.COLOR_XYZ2RGB)
+print(f"XYZ conversion error (MSE): {MSE(img, img_recon)}")
+ipn.show(img_xyz)

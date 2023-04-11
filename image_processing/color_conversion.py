@@ -27,7 +27,7 @@ import numpy as np
 import image_processing.constants as cts
 
 # local
-from image_processing.utils import merge, split
+from image_processing.utils import merge, split, clip_to_range
 
     
 def impl_invert_order(image: np.ndarray) -> np.ndarray:
@@ -270,6 +270,54 @@ def impl_hls2rgb(image: np.ndarray) -> np.ndarray:
         return np.uint8(result * 255)
     else:
         return result
+    
+def impl_rgb2xyz(image: np.ndarray) -> np.ndarray:
+    """RGB2XYZ
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    if image.dtype != float:
+        R, G, B = split(image.astype("float64") / 255)
+    else:
+        R, G, B = split(image)
+      
+    X = 0.412453 * R + 0.357580 * G + 0.180423 * B
+    Y = 0.212671 * R + 0.715160 * G + 0.072169 * B
+    Z = 0.019334 * R + 0.119193 * G + 0.950227 * B
+    
+    result = merge([X, Y, clip_to_range(Z, 0, 1)])
+    if image.dtype != float:
+        return np.uint8(result * 255)
+    else:
+        return result
+    
+def impl_xyz2rgb(image: np.ndarray) -> np.ndarray:
+    """XYZ2RGB
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    if image.dtype != float:
+        X, Y, Z = split(image.astype("float64"))
+    else:
+        X, Y, Z = split(image)
+        
+    R = 3.240479 * X - 1.53715 * Y - 0.498535 * Z
+    G = -0.969256 * X + 1.875991 * Y + 0.041556 * Z
+    B = 0.055648 * X - 0.204043 * Y + 1.057311 * Z
+    
+    result = merge([R, G, B])
+    if image.dtype != float:
+        return np.uint8(clip_to_range(result, 0, 255))
+    else:
+        return clip_to_range(result, 0, 1)
 
 conversion_methods = {
     cts.COLOR_RGB2BGR: impl_invert_order,
@@ -281,7 +329,9 @@ conversion_methods = {
     cts.COLOR_RGB2HSV: impl_rgb2hsv,
     cts.COLOR_HSV2RGB: impl_hsv2rgb,
     cts.COLOR_RGB2HLS: impl_rgb2hls,
-    cts.COLOR_HLS2RGB: impl_hls2rgb
+    cts.COLOR_HLS2RGB: impl_hls2rgb,
+    cts.COLOR_RGB2XYZ: impl_rgb2xyz,
+    cts.COLOR_XYZ2RGB: impl_xyz2rgb
 }
 
 def convert_color(image: np.ndarray, mode: int) -> np.ndarray:
@@ -289,9 +339,9 @@ def convert_color(image: np.ndarray, mode: int) -> np.ndarray:
             COLOR_RGB2BGR, COLOR_BGR2RGB, COLOR_RGB2GRAY
             COLOR_GRAY2RGB, COLOR_RGB2RGBA, COLOR_RGBA2RGB
             COLOR_RGB2HSV, COLOR_HSV2RGB, COLOR_RGB2HSL
-            COLOR_HSL2RGB, COLOR_RGB2LAB*, COLOR_LAB2RGB*
+            COLOR_HSL2RGB, COLOR_RGB2XYZ, COLOR_XYZ2RGB
 
-    * to be implemented in the future
+    * more options to be implemented in the future
     
     Args:
         image (np.ndarray): Input image

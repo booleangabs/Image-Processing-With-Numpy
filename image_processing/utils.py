@@ -38,8 +38,9 @@ def show(image: np.ndarray) -> None:
         image (np.ndarray): Input image
     """
     plt.axis("off")
+    
     if len(image.shape) > 2:
-        plt.imshow(image.astype("uint8"))
+        plt.imshow(image)
     else:
         plt.imshow(image, cmap="gray")
     plt.show()

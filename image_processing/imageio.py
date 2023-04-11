@@ -35,7 +35,7 @@ import os
 import warnings
 
 
-def read_image(path: str, mode: int) -> np.ndarray:
+def read_image(path: str, mode: int = cts.READ_COLOR) -> np.ndarray:
     """Reads image
     Extension is automatically detected
 

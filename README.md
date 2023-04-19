@@ -9,11 +9,22 @@ Implementing digital image processing concepts and algorithms using only Numpy a
 - Channel splitting and merging
 - Color conversion: Grayscale, BGR, HSV, HLS, XYZ, Lab, YCbCr, Luv (In development) 
 
+### Setup
+[LINUX] To properly use the package, run the following commands:
+
+```
+python3 -m venv image_processing
+source image_processing/bin/activate
+image_processing/bin/pip install -r requirements.txt
+image_processing/bin/python3 setup.py install
+```
+
+You may also install it globally outside of a venv (Matplotlib and Numpy must be installed);
+
 
 ### Examples
-To run the usage examples, run ```python examples/x_example.py``` with the desired example file.
+To run the usage examples, run ```image_processing/bin/python3 examples/*.py``` with the "*" as the desired example file.
 More information about each example file is to be added in a README.md inside the examples folder in the future.
-
 
 ### Contributing
 As this is a personal project focused on reviewing and applying concepts that I've studied before,

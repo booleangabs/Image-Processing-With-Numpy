@@ -26,7 +26,7 @@ SOFTWARE.
 import numpy as np
 
 # local
-from context import image_processing as ipn
+import image_processing as ipn
 import matplotlib.image as mpimg
 
 

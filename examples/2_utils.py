@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 # local
-from context import image_processing as ipn
+import image_processing as ipn
 
 
 img = ipn.read_image("inputs/peppers2.tif", ipn.READ_GRAY)

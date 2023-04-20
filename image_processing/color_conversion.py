@@ -298,7 +298,7 @@ def convert_color(image: np.ndarray, mode: int) -> np.ndarray:
         mode (int): Color conversion flag. (COLOR_ prefix)
 
     Returns:
-        np.ndarray: _description_
+        np.ndarray: Converted image
     """
     if not mode in conversion_methods.keys():
         raise RuntimeError(f"Conversion {mode} is not available or not a valid option.")

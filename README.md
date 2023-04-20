@@ -1,10 +1,16 @@
+<div align="center">
+  <img src="inputs/camera.png" alt="cameraman" border="0" height="250vw">
+  <img src="inputs/monarch.png" alt="cameraman" border="0" height="250vw">
+  <img src="inputs/peppers3.png" alt="cameraman" border="0" height="250vw">
+</div> 
+
 # Image Processing With Numpy
 Implementing digital image processing concepts and algorithms using only Numpy and Matplotlib
 
 ***
 
 ### Features
-- Image reading and writing                                                                                                           
+- Image reading and writing
 - Image normalization, rescaling and value clipping
 - Channel splitting and merging
 - Color conversion: Grayscale, BGR, HSV, HLS, XYZ, Lab, YCbCr, Luv (In development) 

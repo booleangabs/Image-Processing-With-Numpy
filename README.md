@@ -4,7 +4,7 @@ Implementing digital image processing concepts and algorithms using only Numpy a
 ***
 
 ### Features
-- Image reading and writing
+- Image reading and writing                                                                                                                     
 - Image normalization, rescaling and value clipping
 - Channel splitting and merging
 - Color conversion: Grayscale, BGR, HSV, HLS, XYZ, Lab, YCbCr, Luv (In development) 
@@ -35,4 +35,4 @@ share any mistakes you may spot in it or provide any feedback or ideas for other
 ***
 
 ### Resource credits
-Sample images in "inputs/" were downloaded for free from the following image repository: https://links.uwaterloo.ca/Repository.html
+Sample images in "inputs/" were downloaded for free from the following image repository: https://links.uwaterloo.ca/Repository.html (and then were converted to ".png")

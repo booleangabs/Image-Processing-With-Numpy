@@ -4,7 +4,7 @@ Implementing digital image processing concepts and algorithms using only Numpy a
 ***
 
 ### Features
-- Image reading and writing                                                                                                                     
+- Image reading and writing                                                                                                           
 - Image normalization, rescaling and value clipping
 - Channel splitting and merging
 - Color conversion: Grayscale, BGR, HSV, HLS, XYZ, Lab, YCbCr, Luv (In development) 
@@ -15,8 +15,8 @@ Implementing digital image processing concepts and algorithms using only Numpy a
 ```
 python3 -m venv image_processing
 source image_processing/bin/activate
-image_processing/bin/pip install -r requirements.txt
-image_processing/bin/python3 setup.py install
+pip install -r requirements.txt
+python3 setup.py install
 ```
 
 You may also install it globally outside of a venv (Matplotlib and Numpy must be installed);

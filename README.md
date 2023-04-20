@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="inputs/camera.png" alt="cameraman" border="0" height="250vw">
-  <img src="inputs/monarch.png" alt="cameraman" border="0" height="250vw">
-  <img src="inputs/peppers3.png" alt="cameraman" border="0" height="250vw">
+  <img src="inputs/camera.png" alt="cameraman" border="0" height="150vw">
+  <img src="inputs/monarch.png" alt="cameraman" border="0" height="150vw">
+  <img src="inputs/peppers3.png" alt="cameraman" border="0" height="150vw">
 </div> 
 
 # Image Processing With Numpy

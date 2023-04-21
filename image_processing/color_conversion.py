@@ -52,7 +52,8 @@ def impl_rgb2gray(image: np.ndarray) -> np.array:
     Returns:
         np.array: Converted Image
     """
-    return np.ceil(0.2989 * image[..., 0] + 0.587 * image[..., 1] + 0.114 * image[..., 2])
+    result = np.ceil(0.2989 * image[..., 0] + 0.587 * image[..., 1] + 0.114 * image[..., 2])
+    return result.astype(image.dtype)
 
 def impl_gray2rgb(image: np.ndarray) -> np.ndarray:
     """GRAY2RGB
@@ -289,11 +290,10 @@ def impl_rgb2xyz(image: np.ndarray) -> np.ndarray:
     Y = 0.212671 * R + 0.715160 * G + 0.072169 * B
     Z = 0.019334 * R + 0.119193 * G + 0.950227 * B
     
-    result = merge([X, Y, Z])
     if image.dtype != float:
-        return np.uint8(result * 255)
+        return np.uint8(clip_to_range(merge([X, Y, Z]), 0, 1) * 255)
     else:
-        return result
+        return merge([X, Y, Z])
     
 def impl_xyz2rgb(image: np.ndarray) -> np.ndarray:
     """XYZ2RGB
@@ -318,20 +318,92 @@ def impl_xyz2rgb(image: np.ndarray) -> np.ndarray:
         return np.uint8(clip_to_range(result, 0, 255))
     else:
         return clip_to_range(result, 0, 1)
+    
+def impl_rgb2lab(image: np.ndarray) -> np.ndarray:
+    """RGB2Lab
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    return image
+
+def impl_lab2rgb(image: np.ndarray) -> np.ndarray:
+    """Lab2RGB
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    return image
+
+def impl_rgb2ycrcb(image: np.ndarray) -> np.ndarray:
+    """RGB2YCrCb
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    return image
+
+def impl_ycrcb2rgb(image: np.ndarray) -> np.ndarray:
+    """YCrCb2RGB
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    return image
+
+def impl_rgb2luv(image: np.ndarray) -> np.ndarray:
+    """RGB2Luv
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    return image
+
+def impl_luv2rgb(image: np.ndarray) -> np.ndarray:
+    """Luv2RGB
+
+    Args:
+        image (np.ndarray): Input image
+
+    Returns:
+        np.ndarray: Converted Image
+    """
+    return image
 
 conversion_methods = {
-    cts.COLOR_RGB2BGR: impl_invert_order,
-    cts.COLOR_BGR2RGB: impl_invert_order,
+    cts.COLOR_RGB2BGR:  impl_invert_order,
+    cts.COLOR_BGR2RGB:  impl_invert_order,
     cts.COLOR_RGB2GRAY: impl_rgb2gray,
     cts.COLOR_GRAY2RGB: impl_gray2rgb,
     cts.COLOR_RGB2RGBA: impl_rgb2rgba,
     cts.COLOR_RGBA2RGB: impl_rgba2rgb,
-    cts.COLOR_RGB2HSV: impl_rgb2hsv,
-    cts.COLOR_HSV2RGB: impl_hsv2rgb,
-    cts.COLOR_RGB2HLS: impl_rgb2hls,
-    cts.COLOR_HLS2RGB: impl_hls2rgb,
-    cts.COLOR_RGB2XYZ: impl_rgb2xyz,
-    cts.COLOR_XYZ2RGB: impl_xyz2rgb
+    cts.COLOR_RGB2HSV:  impl_rgb2hsv,
+    cts.COLOR_HSV2RGB:  impl_hsv2rgb,
+    cts.COLOR_RGB2HLS:  impl_rgb2hls,
+    cts.COLOR_HLS2RGB:  impl_hls2rgb,
+    cts.COLOR_RGB2XYZ:  impl_rgb2xyz,
+    cts.COLOR_XYZ2RGB:  impl_xyz2rgb,
+    cts.COLOR_RGB2Lab:  impl_rgb2lab,
+    cts.COLOR_Lab2RGB:  impl_lab2rgb,
+    cts.COLOR_RGB2YCrCb:  impl_rgb2ycrcb,
+    cts.COLOR_YCrCb2RGB:  impl_ycrcb2rgb,
+    cts.COLOR_RGB2Luv:    impl_rgb2luv,
+    cts.COLOR_Luv2RGB:    impl_luv2rgb
 }
 
 def convert_color(image: np.ndarray, mode: int) -> np.ndarray:
@@ -352,4 +424,8 @@ def convert_color(image: np.ndarray, mode: int) -> np.ndarray:
     """
     if not mode in conversion_methods.keys():
         raise RuntimeError(f"Conversion {mode} is not available or not a valid option.")
-    return conversion_methods[mode](image).astype(image.dtype)
+    return conversion_methods[mode](image)
+
+__all__ = [
+    "convert_color"
+]

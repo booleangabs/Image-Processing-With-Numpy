@@ -289,7 +289,7 @@ def impl_rgb2xyz(image: np.ndarray) -> np.ndarray:
     Y = 0.212671 * R + 0.715160 * G + 0.072169 * B
     Z = 0.019334 * R + 0.119193 * G + 0.950227 * B
     
-    result = merge([X, Y, clip_to_range(Z, 0, 1)])
+    result = merge([X, Y, Z])
     if image.dtype != float:
         return np.uint8(result * 255)
     else:

@@ -44,7 +44,7 @@ def MSE(target: np.ndarray, estimate: np.ndarray) -> float:
 
 
 img = ipn.read_image("inputs/peppers3.tif", ipn.READ_COLOR)
-img_mono = mpimg.imread("inputs/peppers2.tif")[..., 0]
+img_mono = ipn.read_image("inputs/peppers2.tif", ipn.READ_GRAY)
 
 img_bgr = ipn.convert_color(img, ipn.COLOR_RGB2BGR)
 img_recon = ipn.convert_color(img_bgr, ipn.COLOR_BGR2RGB)
@@ -64,3 +64,8 @@ img_hls = ipn.convert_color(img, ipn.COLOR_RGB2HLS)
 img_recon = ipn.convert_color(img_hls, ipn.COLOR_HLS2RGB)
 print(f"HLS conversion error (MSE): {MSE(img, img_recon)}")
 ipn.show(img_hls)
+
+img_xyz = ipn.convert_color(img, ipn.COLOR_RGB2XYZ)
+img_recon = ipn.convert_color(img_xyz, ipn.COLOR_XYZ2RGB)
+print(f"XYZ conversion error (MSE): {MSE(img, img_recon)}")
+ipn.show(img_xyz)

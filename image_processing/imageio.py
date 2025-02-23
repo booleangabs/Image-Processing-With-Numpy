@@ -69,3 +69,8 @@ def write_image(image: np.ndarray, path: str):
     if os.path.isfile(path):
         warnings.warn("File exists. Current file will be overwritten!")
     mpimg.imsave(path, image, cmap="gray")
+
+__all__ = [
+    "read_image", 
+    "write_image"
+]
